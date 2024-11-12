@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:namer_app/app_theme.dart';
-import 'package:namer_app/components/buttons/basic_buttons.dart';
-import 'package:namer_app/components/inputs/text_input.dart';
+import 'package:namer_app/components/bottomSheets/add_todo_item.dart';
 
 class AddFloatingButton extends StatefulWidget {
   const AddFloatingButton({
@@ -16,17 +15,17 @@ class AddFloatingButton extends StatefulWidget {
 }
 
 class _AddFloatingButtonState extends State<AddFloatingButton> {
-  final myController = TextEditingController();
+  final controller = TextEditingController();
 
   @override
   void dispose() {
-    myController.dispose();
+    controller.dispose();
     super.dispose();
   }
 
   void handleOnPress(String text) {
     widget.onPressed(text);
-    myController.clear();
+    controller.clear();
     Navigator.pop(context);
   }
 
@@ -46,39 +45,7 @@ class _AddFloatingButtonState extends State<AddFloatingButton> {
         showModalBottomSheet<void>(
           context: context,
           builder: (BuildContext context) {
-            return Container(
-              height: 400,
-              color: Theme.of(context).colorScheme.primary,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Ajouter une tâche',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                    ),
-
-                    SizedBox(height: 20),
-
-                    CustomTextInput(myController: myController),
-
-                    Spacer(),
-
-                    BackgroundTextButton(
-                      onPressed: () {
-                        handleOnPress(myController.text);
-                      },
-                      text: "Ajouter"
-                    )
-                  ],
-                ),
-                ),
-            ),
-            );
+            return AddTodoItem(onSubmit: () { handleOnPress(controller.text); }, controller: controller);
           }
         );
       },

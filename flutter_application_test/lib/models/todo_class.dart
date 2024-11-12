@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:namer_app/components/list/basic_list.dart';
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
 
@@ -36,6 +37,10 @@ class TodoList extends ChangeNotifier { // Extend ChangeNotifier
     fetchItems();
   }
 
+  GlobalKey<AnimatedListState> _animatedListKey = GlobalKey<AnimatedListState>();
+
+  GlobalKey<AnimatedListState> get animatedListKey => _animatedListKey;
+
   Future<List<TodoItem>> fetchItems() async {
     var url = Uri.http('10.0.2.2:8080', '/list');
     var response = await http.get(url, headers: {'Content-Type': 'application/json'});
@@ -43,6 +48,8 @@ class TodoList extends ChangeNotifier { // Extend ChangeNotifier
     if (response.statusCode == 200) {
       final List<dynamic> todosJson = jsonDecode(response.body);
       items = todosJson.map((json) => TodoItem.fromJson(json)).toList();
+
+      insertAllItemsWithDelay();
       notifyListeners();
     }
 
@@ -53,8 +60,25 @@ class TodoList extends ChangeNotifier { // Extend ChangeNotifier
     return [];
   }
 
+  Future<void> insertAllItemsWithDelay() async {
+  for (int i = 0; i < items.length; i++) {
+    animatedListKey.currentState?.insertItem(
+      i,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    await Future.delayed(const Duration(milliseconds: 100));
+  }
+}
+
+
   Future<void> addItem(TodoItem item) async {
-    items.add(item);
+
+    items.insert(0, item);
+    _animatedListKey.currentState?.insertItem(
+      0,
+      duration: const Duration(milliseconds: 300)
+    );
 
     var url = Uri.http('10.0.2.2:8080', '/add');
     var response = await http.post(
@@ -65,14 +89,13 @@ class TodoList extends ChangeNotifier { // Extend ChangeNotifier
 
     if (response.statusCode == 200) {
       print("Todo item well added");
-    }
-
-    else {
+    } else {
       print('Error: ${response.statusCode}');
     }
 
     notifyListeners();
   }
+
 
   void removeItem(TodoItem item) {
     items.remove(item);
@@ -122,6 +145,30 @@ class TodoList extends ChangeNotifier { // Extend ChangeNotifier
       try {
         TodoItem item = selectedItems.elementAt(0);
 
+        final int index = items.indexOf(item);
+        _animatedListKey.currentState?.removeItem(
+          index,
+          (context, animation) {
+            // Animer l'élément supprimé avec une transition SlideFade
+            return SlideTransition(
+              position: animation.drive(
+                Tween(begin: Offset(1.0, 0.0), end: Offset(0.0, 0.0))
+                  .chain(CurveTween(curve: Curves.elasticInOut)),
+              ),
+              child: FadeTransition(
+                opacity: animation,
+                child: TodoDoListItem(
+                  todo: item,
+                  onToggle: () {}, // Action vide car l'élément est en cours de suppression
+                  setSelectedTodoItem: (id) {}, // Action vide également
+                  isSelected: false,
+                ),
+              ),
+            );
+          },
+          duration: const Duration(milliseconds: 500),
+        );
+
         items.remove(item);
 
         var url = Uri.http('10.0.2.2:8080', '/delete');
@@ -147,8 +194,39 @@ class TodoList extends ChangeNotifier { // Extend ChangeNotifier
         print("No item selected");
         return;
       }
+  }
+
+    Future<void> editSelectedItem(String newTitle) async{
+      Iterable<TodoItem> selectedItems = items.where((element) => element.id == _selectedItem);
 
 
+      try {
+        TodoItem item = selectedItems.elementAt(0);
+        item.title = newTitle;
+
+        var url = Uri.http('10.0.2.2:8080', '/updateTitle');
+        var response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'id': item.id, 'title': item.title, 'isDone': item.isDone}),
+        );
+
+        if (response.statusCode == 200) {
+          print("Todo item well updated");
+        }
+
+        else {
+          print('Error: ${response.statusCode}');
+        }
+
+        _selectedItem = '';
+        notifyListeners();
+      }
+
+      catch(e) {
+        print("No item selected");
+        return;
+      }
   }
 
   bool hasSelectedItem() {

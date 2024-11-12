@@ -4,33 +4,51 @@ import 'package:namer_app/app_theme.dart';
 
 class BackgroundTextButton extends StatelessWidget {
 
-  const BackgroundTextButton({super.key, required this.onPressed, required this.text});
+  const BackgroundTextButton({super.key, required this.onPressed, required this.text, this.isRed = false, this.trailingIcon});
 
   final VoidCallback onPressed;
   final String text;
+  final bool isRed;
+  final Icon? trailingIcon;
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: onPressed,
-      style: ButtonStyle(
-        splashFactory: InkSplash.splashFactory,
-        padding: WidgetStateProperty.all(EdgeInsets.zero),
-      ),
+    final backgroundColor = isRed ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.contrast;
+
+  return TextButton(
+    onPressed: onPressed,
+    style: ButtonStyle(
+      splashFactory: InkSplash.splashFactory,
+      padding: WidgetStatePropertyAll(EdgeInsets.zero), // Ensure no padding from the button itself
+    ),
+    child: Align(
+      alignment: Alignment.center, // Center the button content
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30), // Ajuste les marges du bouton
+        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20), // Adjust the button padding
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.contrast,
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(15),
         ),
-        child: Text(
-          text,
-          style: Theme.of(context).textTheme.displaySmall!.merge(
-              TextStyle(color: Theme.of(context).colorScheme.fontContrast),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween, // This will make the text take available space
+          children: [
+            Expanded( // This will make the Text take all the remaining space
+              child: Text(
+                text,
+                style: Theme.of(context).textTheme.displaySmall!.merge(
+                  TextStyle(color: Theme.of(context).colorScheme.fontContrast),
+                ),
+              ),
             ),
+            SizedBox(width: trailingIcon != null ? 20 : 0),
+            trailingIcon ?? Container(),
+          ],
         ),
       ),
-    );
+    ),
+  );
+
+
   }
 }
 
@@ -39,15 +57,22 @@ class BackgroundIconButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     required this.icon,
-    required this.disabled,
+    this.disabled = false,
+    this.isRed = false,
   });
 
   final VoidCallback onPressed;
   final Icon icon;
   final bool disabled;
+  final bool isRed;
 
   @override
   Widget build(BuildContext context) {
+
+    final bgColor =
+      disabled ? Theme.of(context).colorScheme.fontGray :
+        isRed ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.contrast;
+
     return TextButton(
 
       onPressed: disabled ? null : onPressed,
@@ -58,7 +83,48 @@ class BackgroundIconButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10), // Ajuste les marges du bouton
         decoration: BoxDecoration(
-          color: disabled ? Theme.of(context).colorScheme.fontGray : Theme.of(context).colorScheme.contrast,
+          color: bgColor,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: icon, // Affiche l'icône ici
+      ),
+    );
+  }
+}
+
+
+class BorderIconButton extends StatelessWidget {
+  const BorderIconButton({
+    super.key,
+    required this.onPressed,
+    required this.icon,
+    this.disabled = false,
+    this.isRed = false
+  });
+
+  final VoidCallback onPressed;
+  final Icon icon;
+  final bool disabled;
+  final bool isRed;
+
+
+  @override
+  Widget build(BuildContext context) {
+    final borderColor =
+      disabled ? Theme.of(context).colorScheme.fontGray :
+        isRed ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.contrast;
+
+    return TextButton(
+
+      onPressed: disabled ? null : onPressed,
+      style: ButtonStyle(
+        splashFactory: InkSplash.splashFactory,
+        padding: WidgetStatePropertyAll(EdgeInsets.zero),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10), // Ajuste les marges du bouton
+        decoration: BoxDecoration(
+          border: Border.all(color: borderColor, width: 2),
           borderRadius: BorderRadius.circular(15),
         ),
         child: icon, // Affiche l'icône ici

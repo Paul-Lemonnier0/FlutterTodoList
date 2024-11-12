@@ -14,11 +14,16 @@ class CustomProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(children: [
       Expanded( // Utilisez Expanded pour donner une largeur contrainte
-        child: LinearProgressIndicator(
-          value: value,
-          borderRadius: BorderRadius.circular(10),
-          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.contrast),
-        )
+        child: TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          tween: Tween<double>(
+              begin: 0,
+              end: value.clamp(0.0, 1.0)
+          ),
+          builder: (context, value, _) =>
+              LinearProgressIndicator(value: value, valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.contrast), borderRadius: BorderRadius.circular(10),)
+      ),
       ),
       SizedBox(width: 20),
       Text(

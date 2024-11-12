@@ -1,6 +1,7 @@
 package com.example.flutterappbackend;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
@@ -13,12 +14,21 @@ public class TodoItem {
     private Date creationDate;
     private boolean isDone;
 
+    @PersistenceCreator
     public TodoItem(String id, String title) {
         this.id = id;
         this.title = title;
         this.creationDate = new Date();
         this.isDone = false;
     }
+
+    public TodoItem(String id, String title, boolean isDone) {
+        this.id = id;
+        this.title = title;
+        this.creationDate = new Date();
+        this.isDone = isDone;
+    }
+
 
     public String getId() {
         return id;

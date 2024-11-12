@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:namer_app/app_theme.dart';
+import 'package:namer_app/components/bottomSheets/todo_item_settings.dart';
 import 'package:namer_app/components/buttons/basic_buttons.dart';
 import 'package:namer_app/components/buttons/floating_button.dart';
 import 'package:namer_app/components/list/basic_list.dart';
@@ -67,10 +68,31 @@ class _MyHomePageState extends State<MyHomePage> {
     todoList.deleteSelectedItem();
   }
 
+
+  void editSelectedItem(String newTitle) {
+    final todoList = Provider.of<TodoList>(context, listen: false);
+    todoList.editSelectedItem(newTitle);
+  }
+
   bool hasSelectedItem() {
     final todoList = Provider.of<TodoList>(context, listen: false);
     return todoList.hasSelectedItem();
   }
+
+  TodoItem getSelectedItem() {
+    final todoList = Provider.of<TodoList>(context, listen: false);
+      final selectedId = todoList.selectedItemID;
+
+      final selectedItem = todoList.items.firstWhere(
+        (item) => item.id == selectedId,
+      );
+
+      controller.text = selectedItem.title;
+
+      return selectedItem;
+  }
+
+  final controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +104,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: AddFloatingButton(onPressed: addItem),
-
 
       bottomNavigationBar: CustomBottomTabBar(),
       body: Padding(
@@ -127,16 +148,21 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                               ),
 
-
-
                               Align(
                                 alignment: Alignment.centerRight,
-                                child: BackgroundIconButton(
+                                child: BorderIconButton(
                                   disabled: !hasSelectedItem(),
-                                  onPressed: deleteSelectedItem,
+                                  onPressed: () {
+                                    showModalBottomSheet<void>(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return TodoItemSettings(todo: getSelectedItem(), controller: controller, onDelete: deleteSelectedItem, onEdit: editSelectedItem);
+                                      }
+                                    );
+                                  },
                                   icon: Icon(
-                                    Icons.delete,
-                                    color: Theme.of(context).colorScheme.fontContrast,
+                                    Icons.more_horiz_outlined,
+                                    color: !hasSelectedItem() ? Theme.of(context).colorScheme.fontGray : Theme.of(context).colorScheme.contrast,
                                     size: 25,
                                   ),
                                 ),

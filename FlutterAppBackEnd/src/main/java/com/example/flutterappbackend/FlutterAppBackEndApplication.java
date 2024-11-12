@@ -31,6 +31,17 @@ public class FlutterAppBackEndApplication {
 		repository.save(new TodoItem(id, title));
 	}
 
+	@PostMapping("/updateTitle")
+	public void updateTitle(@RequestBody Map<String, String> body) {
+		String id = body.get("id");
+		String title = body.get("title");
+		String isDoneStr = body.get("isDone");
+
+		boolean isDone = Boolean.parseBoolean(isDoneStr);
+
+		repository.save(new TodoItem(id, title, isDone));
+	}
+
 	@PostMapping("/update")
 	public void update(@RequestBody Map<String, String> body) {
 		String id = body.get("id");
